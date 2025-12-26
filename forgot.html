@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reset Password</title>
+    <style>
+        *{ margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body{ height:100vh; display:flex; align-items:center; justify-content:center; background:#f4f4f4; }
+        .container{ width:400px; background:#fff; border-radius:15px; padding:40px; box-shadow:0 20px 50px rgba(0,0,0,0.1); text-align: center; }
+        h2{ color:#333; margin-bottom:20px; }
+        .input-box{ margin-bottom:15px; }
+        .input-box input{ width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; outline:none; }
+        button{ width:100%; padding:12px; border:none; border-radius:6px; background:#0aa0e6; color:#fff; cursor:pointer; font-weight: bold; }
+        button:hover{ background:#087bb3; }
+        .message { margin-top: 15px; font-size: 13px; }
+        a { color: #0aa0e6; text-decoration: none; font-size: 14px; margin-top: 15px; display: inline-block;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Reset Password</h2>
+        
+        <div id="step1">
+            <p style="margin-bottom:15px; color:#666;">Enter your email to find your account.</p>
+            <div class="input-box"><input type="email" id="resetEmail" placeholder="Enter your email"></div>
+            <button onclick="checkEmail()">Verify Email</button>
+        </div>
+
+        <div id="step2" style="display:none;">
+            <p style="margin-bottom:15px; color:#666;">User found! Enter new password.</p>
+            <div class="input-box"><input type="password" id="newPass" placeholder="New Password"></div>
+            <button onclick="saveNewPassword()">Update Password</button>
+        </div>
+
+        <div class="message" id="msg" style="color:red;"></div>
+        <a href="login.html">Back to Login</a>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
