@@ -453,7 +453,7 @@ main{
 </main>
 
 <script>
-// --- SPEECH RECOGNITION SETUP (FIXED FOR INSTANT TYPING) ---
+// --- SPEECH RECOGNITION SETUP (INSTANT & LAG-FREE) ---
 let recognition;
 let isRecording = false;
 let baseText = ""; // To store text before speech starts
@@ -479,12 +479,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         document.getElementById("micBtn").classList.remove("recording");
     };
 
-    // --- THE FIX: INSTANT UPDATE LOGIC ---
+    // --- INSTANT UPDATE LOGIC ---
     recognition.onresult = function(event) {
         let currentSessionTranscript = "";
 
         // Combine all results from this specific recording session (Final + Interim)
-        for (let i = 0; i < event.results.length; ++i) {
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
             currentSessionTranscript += event.results[i][0].transcript;
         }
 
@@ -504,7 +504,7 @@ function toggleVoice() {
     }
 }
 
-// --- CORE LOGIC (UNCHANGED) ---
+// --- CORE PARSING LOGIC (SMART FILTER & DATE FIX) ---
 
 function generateActionItems(){
   const rawText = document.getElementById("mainInput").value;
@@ -525,40 +525,35 @@ function generateActionItems(){
     let text = line.trim();
     if(text === "") return;
 
-    // --- 1. SMART FILTER (Ignore "Hi", "Hello", "Okay") ---
-    // If the line implies an action ("will", "to", "deadline", "schedule"), keep it.
-    // If not, skip it (treat as chatter).
+    // --- 1. SMART FILTER (Ignore "Hi", "Hello") ---
+    // Only process if it contains action verbs
     const isAction = text.match(/\b(will|to|deadline|schedule|submit|complete|fix)\b/i);
-    
-    // Also ignore lines that are just questions or greetings
     if(!isAction || text.includes("?")) return;
 
     hasItems = true;
 
-    // --- 2. EXTRACT NAME (Handle "Rahul:" vs "Rahul") ---
-    // Grab the first word. Remove ":" if it exists (e.g., "Rahul:" -> "Rahul")
+    // --- 2. EXTRACT NAME ---
     let firstWord = text.split(" ")[0]; 
+    // Remove colons from names like "Rahul:"
     let assigned = firstWord.replace(/[:]/g, ""); 
-    
-    // Capitalize Name
     assigned = assigned.charAt(0).toUpperCase() + assigned.slice(1);
 
-    // --- 3. EXTRACT DATE ---
+    // --- 3. EXTRACT DATE (Handles "May 30" and "Tomorrow") ---
     let dateMatch = text.toLowerCase().match(
-      /(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/
+      /((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s\d{1,2}(st|nd|rd|th)?)|(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/i
     );
     let due = dateMatch ? capitalize(dateMatch[0]) : "Not specified";
 
-    // --- 4. EXTRACT TASK (Remove Name and Keywords) ---
-    // Remove the name "Rahul:" and the date "by Friday" to clean up the task text
+    // --- 4. EXTRACT TASK (Clean up string) ---
     let task = text
-      .replace(firstWord, "") // Remove Name
-      .replace(/:/g, "") // Remove stray colons
-      .replace(/\b(will|to)\b/i, "") // Remove "will" or "to"
-      .replace(/by\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight)/i, "")
+      .replace(firstWord, "") 
+      .replace(/:/g, "") 
+      .replace(/\b(will|to)\b/i, "") 
+      // Remove the date string we found
+      .replace(due.toLowerCase(), "")
+      .replace(/by\s+/, "") 
       .trim();
-      
-    // Clean up if the task starts with "I" (e.g., "Rahul: I will fix...")
+
     if(task.toLowerCase().startsWith("i ")) {
         task = task.substring(2);
     }
@@ -571,7 +566,7 @@ function generateActionItems(){
       priority = "medium";
     }
 
-    // --- RENDER CARDS (Same as before) ---
+    // --- RENDER CARDS ---
     
     // 1. Action Card
     const action = document.createElement("div");
@@ -624,6 +619,7 @@ function generateActionItems(){
   
   if(!hasItems) {
       actionBox.innerHTML = "<p style='text-align:center; color:#777;'>No actionable tasks found in conversation.</p>";
+      reminderList.innerHTML = "<p style='text-align:center; color:#777;'>No items to remind.</p>";
   }
 }
 
