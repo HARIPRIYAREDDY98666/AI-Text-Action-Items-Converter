@@ -371,6 +371,33 @@ main{
     transition: opacity 0.3s;
 }
 
+.ai-disclaimer {
+  margin-top: 30px;
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #555;
+  background: #f0f2ff;
+  border-top: 1px solid #ddd;
+}
+
+/* ---------- LOGOUT BUTTON ---------- */
+.logout-btn{
+  background:#ff4d4d;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+}
+
+.logout-btn:hover{
+  background:#e60000;
+}
+
+
 @keyframes popUp{
   from{opacity:0; transform:translateY(-30%);}
   to{opacity:1; transform:translateY(-50%);}
@@ -386,9 +413,13 @@ main{
     <span onclick="scrollToSection('inputSection')">Input Notes</span>
     <span onclick="scrollToSection('actionSection')">Action Items</span>
     <span onclick="scrollToSection('timelineSection')">Task Timeline</span>
-    <span onclick="scrollToSection('emailSection')">Email Generator</span>
     <span onclick="scrollToSection('reminderSection')">Smart Reminders</span>
+     <span onclick="scrollToSection('emailSection')">Email Generator</span>
   </div>
+<!-- 🔓 LOGOUT BUTTON (TOP RIGHT) -->
+    <span id="welcomeUser" style="font-weight:600;"></span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+
 </header>
 
 <main>
@@ -453,34 +484,25 @@ main{
 </main>
 
 <script>
-// --- SPEECH RECOGNITION SETUP (LAG-FREE + PREVIEW MODE) ---
+// --- SPEECH RECOGNITION SETUP (FIXED FOR INSTANT TYPING) ---
 let recognition;
 let isRecording = false;
-
-// Variables to manage the "Live Preview"
-let session_final = ''; // Confirmed text in this session
-let base_text = '';     // Text that was already in the box
+let baseText = ""; // To store text before speech starts
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
     recognition.continuous = true; 
-    recognition.interimResults = true; // MUST be true for instant feedback
+    // ENABLE INSTANT RESULTS
+    recognition.interimResults = true; 
     recognition.lang = 'en-US';
 
     recognition.onstart = function() {
         isRecording = true;
         document.getElementById("micBtn").classList.add("recording");
-        
-        // 1. Capture what is already in the box so we don't lose it
-        base_text = document.getElementById("mainInput").value;
-        
-        // 2. Add a safe space if needed
-        if (base_text.length > 0 && !base_text.endsWith(' ') && !base_text.endsWith('\n')) {
-            base_text += " ";
-        }
-        
-        session_final = ''; // Reset current session text
+        // Save the current text so we don't overwrite it, we append to it
+        baseText = document.getElementById("mainInput").value;
+        if (baseText.length > 0) baseText += " "; // Add space if needed
     };
 
     recognition.onend = function() {
@@ -488,24 +510,17 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         document.getElementById("micBtn").classList.remove("recording");
     };
 
-    // --- INSTANT PREVIEW LOGIC ---
+    // --- THE FIX: INSTANT UPDATE LOGIC ---
     recognition.onresult = function(event) {
-        let interim_transcript = '';
+        let currentSessionTranscript = "";
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                // If the browser confirms the word, add it to our session final string
-                session_final += event.results[i][0].transcript + ' ';
-            } else {
-                // If the browser is still guessing, it goes here (Live Preview)
-                interim_transcript += event.results[i][0].transcript;
-            }
+        // Combine all results from this specific recording session (Final + Interim)
+        for (let i = 0; i < event.results.length; ++i) {
+            currentSessionTranscript += event.results[i][0].transcript;
         }
-        
-        // 3. Update the text box INSTANTLY with:
-        //    [Old Text] + [Confirmed New Text] + [Live Guessing Text]
-        const mainInput = document.getElementById("mainInput");
-        mainInput.value = base_text + session_final + interim_transcript;
+
+        // Update the box immediately with Base Text + Current Speech
+        document.getElementById("mainInput").value = baseText + currentSessionTranscript;
     };
 } else {
     alert("Speech Recognition is not supported in this browser. Please use Chrome.");
@@ -520,7 +535,7 @@ function toggleVoice() {
     }
 }
 
-// --- CORE PARSING LOGIC (SMART FILTER & DATE FIX) ---
+// --- CORE LOGIC (UNCHANGED) ---
 
 function generateActionItems(){
   const rawText = document.getElementById("mainInput").value;
@@ -541,32 +556,40 @@ function generateActionItems(){
     let text = line.trim();
     if(text === "") return;
 
-    // --- 1. SMART FILTER ---
+    // --- 1. SMART FILTER (Ignore "Hi", "Hello", "Okay") ---
+    // If the line implies an action ("will", "to", "deadline", "schedule"), keep it.
+    // If not, skip it (treat as chatter).
     const isAction = text.match(/\b(will|to|deadline|schedule|submit|complete|fix)\b/i);
+    
+    // Also ignore lines that are just questions or greetings
     if(!isAction || text.includes("?")) return;
 
     hasItems = true;
 
-    // --- 2. EXTRACT NAME ---
+    // --- 2. EXTRACT NAME (Handle "Rahul:" vs "Rahul") ---
+    // Grab the first word. Remove ":" if it exists (e.g., "Rahul:" -> "Rahul")
     let firstWord = text.split(" ")[0]; 
     let assigned = firstWord.replace(/[:]/g, ""); 
+    
+    // Capitalize Name
     assigned = assigned.charAt(0).toUpperCase() + assigned.slice(1);
 
     // --- 3. EXTRACT DATE ---
     let dateMatch = text.toLowerCase().match(
-      /((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s\d{1,2}(st|nd|rd|th)?)|(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/i
+      /(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/
     );
     let due = dateMatch ? capitalize(dateMatch[0]) : "Not specified";
 
-    // --- 4. EXTRACT TASK ---
+    // --- 4. EXTRACT TASK (Remove Name and Keywords) ---
+    // Remove the name "Rahul:" and the date "by Friday" to clean up the task text
     let task = text
-      .replace(firstWord, "") 
-      .replace(/:/g, "") 
-      .replace(/\b(will|to)\b/i, "") 
-      .replace(due.toLowerCase(), "")
-      .replace(/by\s+/, "") 
+      .replace(firstWord, "") // Remove Name
+      .replace(/:/g, "") // Remove stray colons
+      .replace(/\b(will|to)\b/i, "") // Remove "will" or "to"
+      .replace(/by\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight)/i, "")
       .trim();
-
+      
+    // Clean up if the task starts with "I" (e.g., "Rahul: I will fix...")
     if(task.toLowerCase().startsWith("i ")) {
         task = task.substring(2);
     }
@@ -579,7 +602,7 @@ function generateActionItems(){
       priority = "medium";
     }
 
-    // --- RENDER CARDS ---
+    // --- RENDER CARDS (Same as before) ---
     
     // 1. Action Card
     const action = document.createElement("div");
@@ -632,7 +655,6 @@ function generateActionItems(){
   
   if(!hasItems) {
       actionBox.innerHTML = "<p style='text-align:center; color:#777;'>No actionable tasks found in conversation.</p>";
-      reminderList.innerHTML = "<p style='text-align:center; color:#777;'>No items to remind.</p>";
   }
 }
 
@@ -734,7 +756,26 @@ function capitalize(word){
 function scrollToSection(id){
   document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
+
+function logout(){
+  const confirmLogout = confirm("Are you sure you want to logout?");
+  
+  if (confirmLogout) {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("username"); // optional but recommended
+    window.location.href = "login.html";
+  }
+}
+
+
 </script>
+
+<!-- AI Disclaimer -->
+<footer class="ai-disclaimer">
+  ⚠️ <strong>AI Disclaimer:</strong>
+  This system uses AI-assisted text analysis to suggest action items.
+  Outputs may require human review and confirmation.
+</footer>
 
 </body>
 </html>
