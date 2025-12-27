@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -34,14 +34,31 @@
             color: #0aa0e6;
             text-decoration: underline;
         }
+
+      .left{
+    width:50%;
+    background:url("https://media.istockphoto.com/id/1371325578/photo/kanban-project-management-software-on-laptop.jpg?s=612x612&w=0&k=20&c=-YK8Bj2KS3Px74_Rjudm1_Jhq-n8vqhLDHuontnhojs=") center/cover no-repeat;
+    position:relative;
+}
+
+.left::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+}
+
+
+
+
     </style>
 </head>
 <body>
 <div class="container">
     <div class="left">
         <div class="left-content">
-            <h2>Incredible Tours</h2>
-            <p>AI Text → Action-Items Converter</p>
+            <h2 style="color: 	#ffffff;">Prompt2Plan</h2>
+            <p >Text → Tasks → Timeline</p>
         </div>
     </div>
     <div class="right">
@@ -63,5 +80,4 @@
 </div>
 <script src="auth.js"></script>
 </body>
-
 </html>
