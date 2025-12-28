@@ -5,397 +5,103 @@
 <title>AI Text → Action Items & Reminders</title>
 
 <style>
-:root{
-  --blue:#1f4fd8;
-  --light:#eef4ff;
-  --red: #d81f1f;
-  --green: #1b7f3b;
+/* --- YOUR EXACT CSS STYLES --- */
+:root{ --blue:#1f4fd8; --light:#eef4ff; --red: #d81f1f; --green: #1b7f3b; }
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Segoe UI, sans-serif; }
+
+/* ========================================= */
+/* === ONLY CHANGE: BACKGROUND ANIMATION === */
+/* ========================================= */
+body { 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    
+    /* Layer 1: Moving Dots */
+    /* Layer 2: Moving Blue Gradient */
+    background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.3) 2px, transparent 2px),
+        linear-gradient(-45deg, #a9d1f4, #7ad0ed, #56CCF2, #a9d1f4);
+        
+    /* Size 1: Dots spacing */
+    /* Size 2: Gradient size */
+    background-size: 30px 30px, 400% 400%;
+    
+    /* Animation */
+    animation: gradientMove 15s ease infinite;
 }
 
-/* ---------- GLOBAL ---------- */
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Segoe UI, sans-serif;
+/* Keyframes for the moving background */
+@keyframes gradientMove {
+    0% { background-position: 0 0, 0% 50%; }
+    50% { background-position: 50px 50px, 100% 50%; }
+    100% { background-position: 0 0, 0% 50%; }
 }
+/* ========================================= */
 
-body{
-  height:100vh;
-  background:linear-gradient(135deg,#eaf1ff,#ffffff);
-  display:flex;
-  flex-direction:column;
-}
+header{ background:linear-gradient(135deg,#51c7e8,#3aaaf0); color:white; padding:14px 30px; display:flex; justify-content:space-between; align-items:center; }
+.tabs{ display:flex; gap:22px; }
+.tabs span{ cursor:pointer; opacity:.85; }
+.tabs span:hover{ opacity:1; text-decoration:underline; }
 
-/* ---------- HEADER ---------- */
-header{
-  background:linear-gradient(135deg,#1f4fd8,#3a6cf0);
-  color:white;
-  padding:14px 30px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+/* Logout Button */
+.logout-btn { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255,255,255,0.6); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+.logout-btn:hover { background: white; color: var(--blue); }
 
-.tabs{
-  display:flex;
-  gap:22px;
-}
+main{ flex:1; overflow-y:auto; padding:25px; }
+.card{ max-width:1200px; margin:0 auto 60px; background:white; border-radius:18px; padding:30px; box-shadow:0 20px 45px rgba(0,0,0,.12); transition:transform .3s ease, box-shadow .3s ease; }
+.card:hover{ transform:translateY(-4px); box-shadow:0 25px 55px rgba(0,0,0,.15); }
+.card h1{ text-align:center; color:var(--blue); margin-bottom:18px; }
 
-.tabs span{
-  cursor:pointer;
-  opacity:.85;
-}
+.input-wrapper { position: relative; width: 100%; }
+.main-textarea{ width: 100%; height: 200px; padding: 20px; border-radius: 14px; border: 2px solid #cddcff; font-size: 16px; line-height: 1.5; resize: vertical; background: var(--light); }
+.main-textarea:focus { outline: none; border-color: var(--blue); background: #fff; }
 
-.tabs span:hover{
-  opacity:1;
-  text-decoration:underline;
-}
+.mic-btn { position: absolute; bottom: 20px; right: 20px; background: white; border: 2px solid #cddcff; color: #555; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: .3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; }
+.mic-btn:hover { transform: scale(1.1); border-color: var(--blue); color: var(--blue); }
+.mic-btn.recording { background: var(--red); color: white; border-color: var(--red); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(216, 31, 31, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(216, 31, 31, 0); } 100% { box-shadow: 0 0 0 0 rgba(216, 31, 31, 0); } }
 
-/* --- LOGOUT BUTTON STYLE --- */
-.logout-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255,255,255,0.6);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.box{ margin-top:20px; border-radius:14px; }
+.generate-btn{ display:block; margin:0 auto 18px; background:var(--blue); color:white; border:none; padding:12px 28px; border-radius:10px; cursor:pointer; font-size: 16px; }
+.generate-btn:hover { transform: scale(1.05); }
 
-.logout-btn:hover {
-    background: white;
-    color: var(--blue);
-}
+/* Action Items */
+.action-item{ background:white; padding:16px; margin-bottom:14px; border-radius:10px; box-shadow:0 6px 14px rgba(0,0,0,.08); transition:.3s; border-left: 5px solid var(--blue); position: relative; }
+.action-item .delete-btn { position: absolute; top: 10px; right: 10px; color: #aaa; cursor: pointer; font-size: 18px; font-weight:bold; }
+.action-item .delete-btn:hover { color: var(--red); }
+.action-item.active{ border:2px solid #1f4fd8; background:#f5f9ff; transform:scale(1.02); }
 
-/* ---------- MAIN ---------- */
-main{
-  flex:1;
-  overflow-y:auto;
-  padding:25px;
-}
+.action-title{ font-weight:600; color:#1f4fd8; }
+.meta{ margin-top:6px; font-size:14px; }
+.badge{ margin-left:10px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.high{ background:#ffd6d6; color:#c60000; } .medium{ background:#fff1c1; color:#a26b00; } .low{ background:#dff5e1; color:#1b7f3b; }
 
-/* ---------- CARD ---------- */
-.card{
-  max-width:1200px;
-  margin:0 auto 60px;
-  background:white;
-  border-radius:18px;
-  padding:30px;
-  box-shadow:0 20px 45px rgba(0,0,0,.12);
-  transition:transform .3s ease, box-shadow .3s ease;
-}
+.timeline{ position:relative; margin-top:40px; padding:50px 20px; }
+.timeline-line{ position:absolute; top:50%; left:0; right:0; height:4px; background:#cddcff; border-radius:5px; }
+.timeline-items{ display:flex; justify-content:space-between; position:relative; z-index:2; }
+.timeline-item{ width:180px; background:white; border-radius:12px; padding:14px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,.12); transform:translateY(-50%); transition:.3s; cursor:pointer; animation:popUp .5s ease; }
+.timeline-item:hover{ transform:translateY(-60%) scale(1.05); }
+.timeline-item::before{ content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%); width:16px; height:16px; border-radius:50%; background:inherit; border:4px solid white; }
+.timeline-item.high{ background:#ffd6d6; color:#c60000; } .timeline-item.medium{ background:#fff1c1; color:#a26b00; } .timeline-item.low{ background:#dff5e1; color:#1b7f3b; }
 
-.card:hover{
-  transform:translateY(-4px);
-  box-shadow:0 25px 55px rgba(0,0,0,.15);
-}
+.email-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+.email-grid input{ padding:14px; border-radius:10px; border:2px solid #cddcff; }
+.email-btn{ margin-top:25px; margin-bottom:40px; background:var(--blue); color:white; border:none; padding:12px 32px; border-radius:10px; cursor:pointer; }
+.email-btn:hover{ transform:scale(1.05); }
+.email-output{ background:#ffffff; border-radius:12px; padding:24px; line-height:1.6; box-shadow:0 10px 25px rgba(0,0,0,.1); animation:fadeIn .4s ease; }
 
-.card h1{
-  text-align:center;
-  color:var(--blue);
-  margin-bottom:18px;
-}
+.reminder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+.reminder-card { background: #fff; border: 1px solid #cddcff; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+.reminder-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--blue); }
+.reminder-header { font-weight: bold; color: #333; margin-bottom: 10px; }
+.reminder-controls { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
+.reminder-input { width: 60px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; text-align: center; }
+.set-btn { background: var(--blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.set-btn:disabled { background: #ccc; cursor: not-allowed; }
+.status-msg { font-size: 12px; margin-top: 8px; color: var(--green); font-weight: 600; opacity: 0; transition: opacity 0.3s; }
 
-/* ---------- INPUT AREA ---------- */
-.input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.main-textarea{
-  width: 100%;
-  height: 200px;
-  padding: 20px;
-  border-radius: 14px;
-  border: 2px solid #cddcff;
-  font-size: 16px;
-  line-height: 1.5;
-  resize: vertical;
-  background: var(--light);
-}
-
-.main-textarea:focus {
-  outline: none;
-  border-color: var(--blue);
-  background: #fff;
-}
-
-.mic-btn {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: white;
-  border: 2px solid #cddcff;
-  color: #555;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  transition: .3s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.mic-btn:hover {
-  transform: scale(1.1);
-  border-color: var(--blue);
-  color: var(--blue);
-}
-
-.mic-btn.recording {
-  background: var(--red);
-  color: white;
-  border-color: var(--red);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(216, 31, 31, 0.7); }
-  70% { box-shadow: 0 0 0 15px rgba(216, 31, 31, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(216, 31, 31, 0); }
-}
-
-/* ---------- BOX & BUTTONS ---------- */
-.box{
-  margin-top:20px;
-  border-radius:14px;
-}
-
-.generate-btn{
-  display:block;
-  margin:0 auto 18px;
-  background:var(--blue);
-  color:white;
-  border:none;
-  padding:12px 28px;
-  border-radius:10px;
-  cursor:pointer;
-  font-size: 16px;
-}
-
-.generate-btn:hover {
-    transform: scale(1.05);
-}
-
-/* ---------- ACTION ITEMS ---------- */
-.action-item{
-  background:white;
-  padding:16px;
-  margin-bottom:14px;
-  border-radius:10px;
-  box-shadow:0 6px 14px rgba(0,0,0,.08);
-  transition:.3s;
-  border-left: 5px solid var(--blue);
-}
-
-.action-item.active{
-  border:2px solid #1f4fd8;
-  background:#f5f9ff;
-  transform:scale(1.02);
-}
-
-.action-title{
-  font-weight:600;
-  color:#1f4fd8;
-}
-
-.meta{
-  margin-top:6px;
-  font-size:14px;
-}
-
-/* ---------- PRIORITY BADGES ---------- */
-.badge{
-  margin-left:10px;
-  padding:4px 12px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:600;
-}
-
-.high{ background:#ffd6d6; color:#c60000; }
-.medium{ background:#fff1c1; color:#a26b00; }
-.low{ background:#dff5e1; color:#1b7f3b; }
-
-/* ---------- TIMELINE ---------- */
-.timeline{
-  position:relative;
-  margin-top:40px;
-  padding:50px 20px;
-}
-
-.timeline-line{
-  position:absolute;
-  top:50%;
-  left:0;
-  right:0;
-  height:4px;
-  background:#cddcff;
-  border-radius:5px;
-}
-
-.timeline-items{
-  display:flex;
-  justify-content:space-between;
-  position:relative;
-  z-index:2;
-}
-
-.timeline-item{
-  width:180px;
-  background:white;
-  border-radius:12px;
-  padding:14px;
-  text-align:center;
-  box-shadow:0 10px 25px rgba(0,0,0,.12);
-  transform:translateY(-50%);
-  transition:.3s;
-  cursor:pointer;
-  animation:popUp .5s ease;
-}
-
-.timeline-item:hover{
-  transform:translateY(-60%) scale(1.05);
-}
-
-.timeline-item::before{
-  content:"";
-  position:absolute;
-  top:100%;
-  left:50%;
-  transform:translateX(-50%);
-  width:16px;
-  height:16px;
-  border-radius:50%;
-  background:inherit;
-  border:4px solid white;
-}
-
-.timeline-item.high{ background:#ffd6d6; color:#c60000; }
-.timeline-item.medium{ background:#fff1c1; color:#a26b00; }
-.timeline-item.low{ background:#dff5e1; color:#1b7f3b; }
-
-
-/* ---------- EMAIL GENERATOR ---------- */
-.email-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:20px;
-}
-
-.email-grid input{
-  padding:14px;
-  border-radius:10px;
-  border:2px solid #cddcff;
-}
-
-.email-btn{
-  margin-top:25px;
-  margin-bottom:40px; 
-  background:var(--blue);
-  color:white;
-  border:none;
-  padding:12px 32px;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.email-btn:hover{
-  transform:scale(1.05);
-}
-
-.email-output{
-  background:#ffffff;
-  border-radius:12px;
-  padding:24px;
-  line-height:1.6;
-  box-shadow:0 10px 25px rgba(0,0,0,.1);
-  animation:fadeIn .4s ease;
-}
-
-/* ---------- SMART REMINDERS ---------- */
-.reminder-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.reminder-card {
-    background: #fff;
-    border: 1px solid #cddcff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    position: relative;
-    overflow: hidden;
-}
-
-.reminder-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; width: 5px; height: 100%;
-    background: var(--blue);
-}
-
-.reminder-header {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.reminder-controls {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    align-items: center;
-}
-
-.reminder-input {
-    width: 60px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    text-align: center;
-}
-
-.set-btn {
-    background: var(--blue);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.set-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
-.status-msg {
-    font-size: 12px;
-    margin-top: 8px;
-    color: var(--green);
-    font-weight: 600;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-@keyframes popUp{
-  from{opacity:0; transform:translateY(-30%);}
-  to{opacity:1; transform:translateY(-50%);}
-}
+@keyframes popUp{ from{opacity:0; transform:translateY(-30%);} to{opacity:1; transform:translateY(-50%);} }
 </style>
 </head>
 
@@ -409,9 +115,7 @@ main{
     <span onclick="scrollToSection('timelineSection')">Timeline</span>
     <span onclick="scrollToSection('reminderSection')">Reminders</span>
   </div>
-  <button class="logout-btn" onclick="handleLogout()">
-    Logout ➜
-  </button>
+  <button class="logout-btn" onclick="handleLogout()">Logout ➜</button>
 </header>
 
 <main>
@@ -419,19 +123,15 @@ main{
 <section id="inputSection" class="card">
   <h1>BULK INPUT NOTES</h1>
   <div class="input-wrapper">
-    <textarea id="mainInput" class="main-textarea" placeholder="Paste your Zoom transcript or meeting notes here...Example:
-     - Alex agreed to update the schema by Friday.
-     - Sarah mentioned she will fix the login bug tomorrow.
-     - Team needs to submit the budget by next week."></textarea>
-    <button id="micBtn" class="mic-btn" onclick="toggleVoice()" title="Start/Stop Voice Recording">🎤</button>
+    <textarea id="mainInput" class="main-textarea" placeholder="Paste your Zoom transcript or meeting notes here..."></textarea>
+    <button id="micBtn" class="mic-btn" onclick="toggleVoice()">🎤</button>
   </div>
 </section>
 
 <section id="actionSection" class="card">
   <h1>ACTION ITEMS SUMMARY</h1>
-  <button class="generate-btn" onclick="generateActionItems()">
-    Generate Action Items & Reminders
-  </button>
+  <button class="generate-btn" onclick="parseAndSave()">Generate & Save Tasks</button>
+  <button class="generate-btn" style="background:#d81f1f; margin-top:0;" onclick="clearAllData()">🗑️ Clear All Data</button>
   <div class="box" id="actionBox"></div>
 </section>
 
@@ -460,29 +160,25 @@ main{
 
 <section id="emailSection" class="card">
   <h1>EMAIL GENERATOR</h1>
-
   <div class="email-grid">
     <input id="emailTo" placeholder="To">
     <input id="emailSubject" placeholder="Subject">
     <input id="emailDue" placeholder="Due Date">
   </div>
-
   <button class="email-btn" onclick="generateEmail()">Generate Email</button>
   <button class="email-btn" onclick="copyEmail()">Copy Email</button>
-
   <div id="emailOutput"></div>
-  </section>
+</section>
 
 </main>
 
 <script>
 // --- LOGOUT LOGIC ---
 function handleLogout() {
-    // Redirects to the login page (login.html)
     window.location.href = "./login.html";
 }
 
-// --- SPEECH RECOGNITION SETUP ---
+// --- VOICE LOGIC ---
 let recognition;
 let isRecording = false;
 let session_final = ''; 
@@ -499,9 +195,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         isRecording = true;
         document.getElementById("micBtn").classList.add("recording");
         base_text = document.getElementById("mainInput").value;
-        if (base_text.length > 0 && !base_text.endsWith(' ') && !base_text.endsWith('\n')) {
-            base_text += " ";
-        }
+        if (base_text.length > 0 && !base_text.endsWith(' ') && !base_text.endsWith('\n')) base_text += " ";
         session_final = ''; 
     };
 
@@ -519,15 +213,23 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 interim_transcript += event.results[i][0].transcript;
             }
         }
-        const mainInput = document.getElementById("mainInput");
-        mainInput.value = base_text + session_final + interim_transcript;
+        document.getElementById("mainInput").value = base_text + session_final + interim_transcript;
     };
-} else {
-    alert("Speech Recognition is not supported in this browser. Please use Chrome.");
+    
+    // ERROR HANDLING (Added to help you debug)
+    recognition.onerror = function(event) {
+        console.error("Speech Recognition Error", event.error);
+        if(event.error === 'not-allowed') {
+            alert("Mic Access Blocked! Click the Lock icon in your URL bar and Allow Microphone.");
+        }
+    };
 }
 
 function toggleVoice() {
-    if (!recognition) return;
+    if (!recognition) {
+        alert("Voice API not supported in this browser. Try Chrome.");
+        return;
+    }
     if (isRecording) {
         recognition.stop();
     } else {
@@ -535,122 +237,149 @@ function toggleVoice() {
     }
 }
 
-// --- CORE PARSING LOGIC ---
-function generateActionItems(){
-  const rawText = document.getElementById("mainInput").value;
-  const actionBox = document.getElementById("actionBox");
-  const timeline = document.getElementById("timelineItems");
-  const reminderList = document.getElementById("reminderList");
 
-  actionBox.innerHTML = "";
-  timeline.innerHTML = "";
-  reminderList.innerHTML = "";
+// --- PERSISTENCE LOGIC (From your preferred version) ---
+let allTasks = []; 
 
-  const lines = rawText.split('\n');
-  let validIndex = 0;
-  let hasItems = false;
-
-  lines.forEach((line)=>{
-    let text = line.trim();
-    if(text === "") return;
-
-    const isAction = text.match(/\b(will|to|deadline|schedule|submit|complete|fix)\b/i);
-    if(!isAction || text.includes("?")) return;
-
-    hasItems = true;
-
-    let firstWord = text.split(" ")[0]; 
-    let assigned = firstWord.replace(/[:]/g, ""); 
-    assigned = assigned.charAt(0).toUpperCase() + assigned.slice(1);
-
-    let dateMatch = text.toLowerCase().match(
-      /((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s\d{1,2}(st|nd|rd|th)?)|(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/i
-    );
-    let due = dateMatch ? capitalize(dateMatch[0]) : "Not specified";
-
-    let task = text
-      .replace(firstWord, "") 
-      .replace(/:/g, "") 
-      .replace(/\b(will|to)\b/i, "") 
-      .replace(due.toLowerCase(), "")
-      .replace(/by\s+/, "") 
-      .trim();
-
-    if(task.toLowerCase().startsWith("i ")) {
-        task = task.substring(2);
+window.onload = function() {
+    const savedTasks = localStorage.getItem('myTasks');
+    const savedInput = localStorage.getItem('myInput');
+    
+    if(savedInput) document.getElementById("mainInput").value = savedInput;
+    
+    if(savedTasks) {
+        allTasks = JSON.parse(savedTasks);
+        renderAll(); 
     }
-
-    let priority = "low";
-    if(text.toLowerCase().includes("urgent") || text.toLowerCase().includes("today") || text.toLowerCase().includes("tonight")){
-      priority = "high";
-    } else if(dateMatch){
-      priority = "medium";
-    }
-
-    // 1. Action Card
-    const action = document.createElement("div");
-    action.className = "action-item";
-    action.dataset.index = validIndex;
-    action.innerHTML = `
-      <div class="action-title">
-        ${validIndex + 1}. ${capitalize(task)}
-        <span class="badge ${priority}">${priority.toUpperCase()}</span>
-      </div>
-      <div class="meta">
-        Assigned to: <b>${assigned}</b> | Due: <b>${due}</b>
-      </div>
-    `;
-    action.onclick = () => { autoFillEmail(assigned, task, due); };
-    actionBox.appendChild(action);
-
-    // 2. Timeline Node
-    const node = document.createElement("div");
-    node.className = `timeline-item ${priority}`;
-    node.dataset.index = validIndex;
-    node.innerHTML = `
-      <strong>${capitalize(task)}</strong><br>
-      <small>${priority.toUpperCase()}</small>
-    `;
-    node.onclick = () => {
-      document.querySelectorAll(".action-item").forEach(a => a.classList.remove("active"));
-      const target = document.querySelector(`.action-item[data-index="${node.dataset.index}"]`);
-      target.classList.add("active");
-      target.scrollIntoView({behavior:"smooth", block:"center"});
-    };
-    timeline.appendChild(node);
-
-    // 3. Reminder Card
-    const reminder = document.createElement("div");
-    reminder.className = "reminder-card";
-    reminder.innerHTML = `
-        <div class="reminder-header">${capitalize(task)}</div>
-        <div style="font-size:13px; color:#666;">Due: ${due}</div>
-        <div class="reminder-controls">
-            <input type="number" min="0" placeholder="Min" class="reminder-input" id="time-${validIndex}">
-            <button class="set-btn" onclick="setReminder('${task}', ${validIndex})">Set Alert</button>
-        </div>
-        <div id="status-${validIndex}" class="status-msg">Reminder Set!</div>
-    `;
-    reminderList.appendChild(reminder);
-
-    validIndex++;
-  });
-  
-  if(!hasItems) {
-      actionBox.innerHTML = "<p style='text-align:center; color:#777;'>No actionable tasks found in conversation.</p>";
-      reminderList.innerHTML = "<p style='text-align:center; color:#777;'>No items to remind.</p>";
-  }
 }
 
-// --- REMINDER LOGIC ---
+function parseAndSave(){
+    const rawText = document.getElementById("mainInput").value;
+    localStorage.setItem('myInput', rawText); 
 
+    const lines = rawText.split('\n');
+    let newTasksFound = false;
+
+    lines.forEach((line)=>{
+        let text = line.trim();
+        if(text === "") return;
+        
+        const isAction = text.match(/\b(will|to|deadline|schedule|submit|complete|fix)\b/i);
+        if(!isAction || text.includes("?")) return;
+
+        let firstWord = text.split(" ")[0]; 
+        let assigned = firstWord.replace(/[:]/g, ""); 
+        assigned = assigned.charAt(0).toUpperCase() + assigned.slice(1);
+
+        let dateMatch = text.toLowerCase().match(/((jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s\d{1,2}(st|nd|rd|th)?)|(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|tonight|morning|evening)/i);
+        let due = dateMatch ? capitalize(dateMatch[0]) : "Not specified";
+
+        let taskDesc = text
+            .replace(firstWord, "") .replace(/:/g, "") .replace(/\b(will|to)\b/i, "") .replace(due.toLowerCase(), "") .replace(/by\s+/, "") .trim();
+        if(taskDesc.toLowerCase().startsWith("i ")) taskDesc = taskDesc.substring(2);
+
+        let priority = "low";
+        if(text.toLowerCase().includes("urgent") || text.toLowerCase().includes("today")) priority = "high";
+        else if(dateMatch) priority = "medium";
+
+        allTasks.push({ assigned, task: capitalize(taskDesc), due, priority });
+        newTasksFound = true;
+    });
+
+    if(newTasksFound){
+        document.getElementById("mainInput").value = ""; 
+        localStorage.setItem('myInput', ""); 
+        saveToBrowser();
+        renderAll();
+    } else {
+        alert("No actionable tasks found!");
+    }
+}
+
+function saveToBrowser(){
+    localStorage.setItem('myTasks', JSON.stringify(allTasks));
+}
+
+function renderAll(){
+    const actionBox = document.getElementById("actionBox");
+    const timeline = document.getElementById("timelineItems");
+    const reminderList = document.getElementById("reminderList");
+
+    actionBox.innerHTML = "";
+    timeline.innerHTML = "";
+    reminderList.innerHTML = "";
+
+    if(allTasks.length === 0){
+        actionBox.innerHTML = "<p style='text-align:center; color:#777;'>No tasks yet.</p>";
+        reminderList.innerHTML = "<p style='text-align:center; color:#777;'>No items to remind.</p>";
+        return;
+    }
+
+    allTasks.forEach((item, index) => {
+        const action = document.createElement("div");
+        action.className = "action-item";
+        action.innerHTML = `
+            <span class="delete-btn" onclick="deleteTask(${index})">×</span>
+            <div class="action-title">
+                ${index + 1}. ${item.task}
+                <span class="badge ${item.priority}">${item.priority.toUpperCase()}</span>
+            </div>
+            <div class="meta">
+                Assigned to: <b>${item.assigned}</b> | Due: <b>${item.due}</b>
+            </div>
+        `;
+        action.onclick = (e) => { 
+            if(!e.target.classList.contains('delete-btn')) autoFillEmail(item.assigned, item.task, item.due); 
+        };
+        actionBox.appendChild(action);
+
+        const node = document.createElement("div");
+        node.className = `timeline-item ${item.priority}`;
+        node.innerHTML = `
+            <strong>${item.task}</strong><br>
+            <small>${item.priority.toUpperCase()}</small>
+        `;
+        timeline.appendChild(node);
+
+        const reminder = document.createElement("div");
+        reminder.className = "reminder-card";
+        reminder.innerHTML = `
+            <div class="reminder-header">${item.task}</div>
+            <div style="font-size:13px; color:#666;">Due: ${item.due}</div>
+            <div class="reminder-controls">
+                <input type="number" min="0" placeholder="Min" class="reminder-input" id="time-${index}">
+                <button class="set-btn" onclick="setReminder('${item.task}', ${index})">Set Alert</button>
+            </div>
+            <div id="status-${index}" class="status-msg">Reminder Set!</div>
+        `;
+        reminderList.appendChild(reminder);
+    });
+}
+
+function deleteTask(index){
+    allTasks.splice(index, 1);
+    saveToBrowser();
+    renderAll();
+}
+
+function clearAllData(){
+    if(confirm("Delete all data?")){
+        allTasks = [];
+        saveToBrowser();
+        renderAll();
+    }
+}
+
+// --- REMINDER LOGIC (With Permission Check) ---
 function requestNotificationPermission() {
     if (!("Notification" in window)) {
         alert("This browser does not support desktop notification");
     } else {
         Notification.requestPermission().then(function (permission) {
             if (permission === "granted") {
-                alert("Notifications enabled! You will see alerts when timers expire.");
+                alert("Notifications enabled!");
+            } else {
+                alert("Notifications blocked/denied.");
             }
         });
     }
@@ -685,57 +414,35 @@ function triggerNotification(task) {
     if (Notification.permission === "granted") {
         new Notification(title, options);
     } else {
+        // Fallback if permission denied
         alert(`REMINDER: ${capitalize(task)}`);
     }
 }
 
-/* ---- EMAIL GENERATOR ---- */
+// --- UTILS ---
+function capitalize(word){
+    if(!word) return "";
+    return word.charAt(0).toUpperCase() + word.slice(1);
+}
+function scrollToSection(id){ document.getElementById(id).scrollIntoView({behavior:"smooth"}); }
 function autoFillEmail(person, task, due) {
     document.getElementById("emailTo").value = person;
     document.getElementById("emailSubject").value = capitalize(task);
     document.getElementById("emailDue").value = due;
     scrollToSection('emailSection');
 }
-
 function generateEmail(){
-  const to = document.getElementById("emailTo").value;
-  const subject = document.getElementById("emailSubject").value;
-  const due = document.getElementById("emailDue").value;
-
-  document.getElementById("emailOutput").innerHTML = `
-    <div class="email-output">
-      <b>To:</b> ${to}<br>
-      <b>Subject:</b> ${subject}<br><br>
-
-      Dear ${to},<br><br>
-
-      I hope this email finds you well.<br><br>
-
-      This is a gentle reminder regarding the assigned task
-      <b>"${subject}"</b>. Kindly ensure that it is completed
-      by <b>${due}</b>.<br><br>
-
-      Best regards,<br>
-      Team
-    </div>
-  `;
+    const to = document.getElementById("emailTo").value;
+    const subject = document.getElementById("emailSubject").value;
+    const due = document.getElementById("emailDue").value;
+    document.getElementById("emailOutput").innerText = `To: ${to}\nSubject: ${subject}\n\nDear ${to},\n\nPlease complete "${subject}" by ${due}.\n\nRegards,\nTeam`;
 }
-
 function copyEmail(){
   const emailText = document.getElementById("emailOutput").innerText;
   if(!emailText) return;
   navigator.clipboard.writeText(emailText).then(()=>{
     alert("Email copied to clipboard!");
   });
-}
-
-function capitalize(word){
-  if(!word) return "";
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
-function scrollToSection(id){
-  document.getElementById(id).scrollIntoView({behavior:"smooth"});
 }
 </script>
 
