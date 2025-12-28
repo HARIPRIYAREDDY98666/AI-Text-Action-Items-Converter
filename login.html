@@ -2,83 +2,180 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - AI Action Tool</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Login - Prompt2Plan</title>
     <style>
-        *{ margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-        body{ height:100vh; display:flex; align-items:center; justify-content:center; background:#0aa0e6; }
-        .container{ width:900px; height:500px; background:#fff; border-radius:15px; display:flex; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.3); }
-        .left{ width:50%; background:url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee") center/cover no-repeat; position:relative; }
-        .left::after{ content:""; position:absolute; inset:0; background:rgba(0,0,0,0.3); }
-        .left-content{ position:absolute; bottom:40px; left:40px; color:#fff; z-index:2; }
-        .right{ width:50%; padding:50px; display:flex; flex-direction:column; justify-content:center; }
-        .right h1{ color:#0aa0e6; margin-bottom:10px; }
-        .input-box{ margin-bottom:20px; }
-        .input-box input{ width:100%; padding:12px; border-radius:6px; border:1px solid #ccc; outline:none; }
-        button{ padding:12px; border:none; border-radius:6px; background:#0aa0e6; color:#fff; cursor:pointer; width: 100%; font-weight: bold;}
-        button:hover { background:#087bb3; }
-        .error{ color:red; font-size:13px; text-align:center; margin-top:10px; display:none; }
-        .signup-link { text-align: center; margin-top: 20px; font-size: 14px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
-        /* Forgot Password Link Style */
-        .forgot-link {
-            text-align: right;
-            margin-bottom: 15px;
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            /* --- VISUALS: Moving Dots + Gradient Background --- */
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.3) 2px, transparent 2px),
+                linear-gradient(-45deg, #a9d1f4, #7ad0ed, #56CCF2, #a9d1f4);
+                
+            background-size: 30px 30px, 400% 400%;
+            animation: gradientMove 15s ease infinite;
         }
-        .forgot-link a {
-            font-size: 13px;
-            color: #555;
-            text-decoration: none;
-        }
-        .forgot-link a:hover {
-            color: #0aa0e6;
-            text-decoration: underline;
+
+        @keyframes gradientMove {
+            0% { background-position: 0 0, 0% 50%; }
+            50% { background-position: 50px 50px, 100% 50%; }
+            100% { background-position: 0 0, 0% 50%; }
         }
 
-      .left{
-    width:50%;
-    background:url("https://media.istockphoto.com/id/1371325578/photo/kanban-project-management-software-on-laptop.jpg?s=612x612&w=0&k=20&c=-YK8Bj2KS3Px74_Rjudm1_Jhq-n8vqhLDHuontnhojs=") center/cover no-repeat;
-    position:relative;
-}
+        /* --- VISUALS: Floating Container --- */
+        .container {
+            width: 900px;
+            height: 550px;
+            background: #fff;
+            border-radius: 15px;
+            display: flex;
+            box-shadow: 0 20px 60px rgba(4, 211, 247, 0.151);
+            overflow: hidden;
+            animation: floatBox 6s ease-in-out infinite;
+        }
 
-.left::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-}
+        @keyframes floatBox {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
 
+        /* --- Left Side (Image) --- */
+        .left-panel {
+            width: 50%;
+            background: url("https://media.istockphoto.com/id/1371325578/photo/kanban-project-management-software-on-laptop.jpg?s=612x612&w=0&k=20&c=-YK8Bj2KS3Px74_Rjudm1_Jhq-n8vqhLDHuontnhojs=") center/cover no-repeat;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .left-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
 
+        .text-overlay {
+            position: relative;
+            z-index: 2;
+            padding: 40px;
+            color: white;
+        }
 
+        .text-overlay h2 { font-size: 32px; margin-bottom: 10px; font-weight: bold; }
+        .text-overlay p { font-size: 16px; opacity: 0.9; }
+
+        /* --- Right Side (Form) --- */
+        .right-panel {
+            width: 50%;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-panel h1 { color: #333; margin-bottom: 10px; font-size: 32px; font-weight: bold; }
+        .sub-text { color: #888; margin-bottom: 30px; font-size: 14px; }
+
+        .input-group { margin-bottom: 20px; }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        /* --- VISUALS: Blue Glow on Hover & Focus --- */
+        .input-group input:hover, 
+        .input-group input:focus {
+            border-color: #0aa0e6;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(10, 160, 230, 0.2); 
+            transform: translateY(-2px);
+        }
+
+        .forgot-link { text-align: right; margin-bottom: 25px; }
+        .forgot-link a { color: #666; font-size: 13px; text-decoration: none; }
+        .forgot-link a:hover { color: #0aa0e6; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #0aa0e6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(10, 160, 230, 0.3);
+        }
+        button:hover { 
+            background: #088ac4; 
+            transform: translateY(-2px);
+        }
+
+        .error { 
+            color: red; 
+            font-size: 13px; 
+            text-align: center; 
+            margin-top: 10px; 
+            display: none; 
+        }
+
+        .new-user { text-align: center; margin-top: 25px; font-size: 14px; color: #666; }
+        .new-user a { color: #0aa0e6; text-decoration: none; font-weight: 600; }
+        .new-user a:hover { text-decoration: underline; }
 
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="left">
-        <div class="left-content">
-            <h2 style="color: 	#ffffff;">Prompt2Plan</h2>
-            <p >Text → Tasks → Timeline</p>
+    <div class="left-panel">
+        <div class="text-overlay">
+            <h2 style="color: #f1f0f0;">Prompt2Plan</h2>
+            <p style="font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;">Text -> Tasks -> Timeline </p>
         </div>
     </div>
-    <div class="right">
+    <div class="right-panel">
         <h1>Welcome</h1>
-        <p style="color:#777; font-size:14px; margin-bottom:25px;">Please login to your account</p>
+        <p class="sub-text">Please login to your account</p>
         
-        <div class="input-box"><input type="email" id="email" placeholder="Email"></div>
-        <div class="input-box"><input type="password" id="password" placeholder="Password"></div>
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email">
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password">
+        </div>
         
         <div class="forgot-link">
-            <a href="forgot.html">Forgot Password?</a>
+            <a href="./forgot.html">Forgot Password?</a>
         </div>
 
         <button onclick="handleLogin()">Login</button>
         
         <div class="error" id="error">Invalid Credentials</div>
-        <div class="signup-link">New user? <a href="index.html" style="color:#0aa0e6;">Create an account</a></div>
+        
+        <div class="new-user">
+            New user? <a href="./signup.html">Create an account</a>
+        </div>
     </div>
 </div>
+
 <script src="auth.js"></script>
+
 </body>
 </html>
-
